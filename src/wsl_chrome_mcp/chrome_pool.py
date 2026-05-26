@@ -320,12 +320,14 @@ class ChromePoolManager:
         return self._browser_cdp
 
     async def _find_chrome_path(self) -> str:
-        """Find Chrome executable on Windows."""
+        """Find Chrome or Edge executable on Windows."""
         if self._chrome_path:
             return self._chrome_path
 
         find_chrome_ps = """
         $paths = @(
+            "${env:PROGRAMFILES(x86)}\\Microsoft\\Edge\\Application\\msedge.exe",
+            "$env:PROGRAMFILES\\Microsoft\\Edge\\Application\\msedge.exe",
             "$env:PROGRAMFILES\\Google\\Chrome\\Application\\chrome.exe",
             "${env:PROGRAMFILES(x86)}\\Google\\Chrome\\Application\\chrome.exe",
             "$env:LOCALAPPDATA\\Google\\Chrome\\Application\\chrome.exe"
@@ -336,10 +338,10 @@ class ChromePoolManager:
         chrome_path = result.stdout.strip() if result.returncode == 0 else None
 
         if not chrome_path:
-            raise RuntimeError("Chrome not found on Windows")
+            raise RuntimeError("Chrome/Edge not found on Windows")
 
         self._chrome_path = chrome_path
-        logger.info("Found Chrome at: %s", chrome_path)
+        logger.info("Found browser at: %s", chrome_path)
         return chrome_path
 
     def _setup_event_handlers(self, instance: ChromeInstance) -> None:

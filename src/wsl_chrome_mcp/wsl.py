@@ -245,8 +245,10 @@ def run_windows_command(command: str, *, timeout: float = 30.0) -> subprocess.Co
 
 
 def get_windows_chrome_paths() -> list[str]:
-    """Get possible Chrome installation paths on Windows."""
+    """Get possible Chrome/Edge installation paths on Windows."""
     return [
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
         r"C:\Program Files\Google\Chrome\Application\chrome.exe",
         r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
         r"$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe",
@@ -256,17 +258,19 @@ def get_windows_chrome_paths() -> list[str]:
 
 
 def find_windows_chrome() -> str | None:
-    """Find Chrome executable on Windows from WSL.
+    """Find Chrome or Edge executable on Windows from WSL.
 
     Returns:
-        The path to chrome.exe if found, None otherwise.
+        The path to chrome.exe/msedge.exe if found, None otherwise.
     """
     if not is_wsl():
         return None
 
-    # PowerShell script to find Chrome
+    # PowerShell script to find Chrome or Edge
     ps_script = """
     $paths = @(
+        "${env:PROGRAMFILES(x86)}\\Microsoft\\Edge\\Application\\msedge.exe",
+        "$env:PROGRAMFILES\\Microsoft\\Edge\\Application\\msedge.exe",
         "$env:PROGRAMFILES\\Google\\Chrome\\Application\\chrome.exe",
         "${env:PROGRAMFILES(x86)}\\Google\\Chrome\\Application\\chrome.exe",
         "$env:LOCALAPPDATA\\Google\\Chrome\\Application\\chrome.exe"
