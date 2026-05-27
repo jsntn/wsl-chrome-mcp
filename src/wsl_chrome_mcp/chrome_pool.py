@@ -750,6 +750,21 @@ class ChromePoolManager:
                     last_error = e
                     logger.debug("Browser CDP connection failed for %s: %s", ws_url, e)
 
+        # Fallback: try PowerShell relay for browser-level CDP
+        browser_ws_url = await self._shared_proxy.get_browser_ws_url()
+        if browser_ws_url:
+            try:
+                logger.info("Trying PowerShell relay for browser CDP: %s", browser_ws_url)
+                relay = PowerShellCDPRelay(browser_ws_url)
+                await relay.connect()
+                self._browser_cdp = relay
+                self._direct_tcp_works = False
+                logger.info("Connected browser CDP via PowerShell relay")
+                return
+            except Exception as e:
+                logger.warning("PowerShell relay for browser CDP failed: %s", e)
+                last_error = e
+
         raise ConnectionError(f"Failed to connect browser CDP: {last_error}")
 
     async def _connect_instance_browser_cdp(self, instance: ChromeInstance) -> None:
